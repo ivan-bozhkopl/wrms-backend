@@ -14,8 +14,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v5
-
     - uses: astral-sh/setup-uv@v10
       with:
         version: "0.12.7"
