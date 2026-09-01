@@ -1,0 +1,28 @@
+name: "Setup Python environment"
+description: "Checkout repo, install uv, sync dependencies."
+
+inputs:
+  python-version:
+    description: Python version
+    required: false
+    default: "3.14"
+
+  uv-sync-args:
+    description: "Extra arguments passed to uv sync"
+    default: "--frozen --all-groups"
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v10.0.0
+      with:
+        version: "0.12.7"
+        python-version: ${{ inputs.python-version }}
+        # Persist uv's package cache between workflow runs.
+        enable-cache: true
+
+    - name: Sync dependencies
+      shell: bash
+      # UV_INDEX is set in the calling workflow from secrets.UV_INDEX.
+      # If absent (forks, local act runs) uv falls back to public PyPI only.
+      run: uv sync ${{ inputs.uv-sync-args }}
