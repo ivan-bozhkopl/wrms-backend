@@ -14,15 +14,32 @@ requires-python = ">=3.14"
 dependencies = []
 
 [dependency-groups]
-dev = [
-    "bandit>=1.9.4",
-    "mypy>=2.3.1",
+lint = [
     "ruff>=0.16.4",
-    { include-group = "test" },
 ]
+
+type-check = [
+    "mypy>=2.3.1",
+]
+
+security = [
+    "bandit>=1.9.4",
+]
+
 test = [
     "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
 ]
+
+dev = [
+    { include-group = "lint" },
+    { include-group = "type-check" },
+    { include-group = "security" },
+    { include-group = "test" },
+]
+
+[tool.uv]
+required-version = "==0.12.7"
 
 [tool.ruff]
 line-length = 120
