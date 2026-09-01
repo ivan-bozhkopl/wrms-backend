@@ -1,0 +1,104 @@
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "wrms-backend"
+version = "0.1.0"
+description = "WRMS backend service"
+readme = "README.md"
+authors = [
+    { name = "Ivan Bozhko", email = "ivan.bozhko@nordsec.com" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.4",
+    "mypy>=2.3.1",
+    "ruff>=0.16.4",
+    { include-group = "test" },
+]
+test = [
+    "pytest>=9.1.1",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+select = [
+    "E", "W", # E/W  - pycodestyle (PEP 8 code style errors & warnings)
+    "F",      # Pyflakes (logical bugs like unused imports/variables)
+    "B",      # flake8-bugbear (common bug patterns & design pitfalls)
+    "I",      # isort (import sorting)
+    "UP",     # pyupgrade (upgrades syntax to modern Python versions)
+    "C90",    # mccabe (cyclomatic complexity checks)
+    "TID",    # flake8-tidy-imports (clean import structure)
+    "N",      # pep8-naming (naming conventions for functions/classes/variables)
+    "D",      # pydocstyle (docstring format and presence)
+    "FAST",   # flake8-fastapi (FastAPI specific checks)
+]
+ignore = [
+    "E501",  # Formatting is handled by `ruff format`
+    "D100",  # Missing docstring in public module (avoids requiring docstrings at top of files)
+    "D104",  # Missing docstring in public package (avoids requiring docstrings in __init__.py)
+]
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "D",  # Don't require docstrings in test files
+]
+
+[tool.ruff.lint.isort]
+# Sort imports strictly alphabetically regardless of case or type (Classes vs. functions),
+# ensuring consistent ordering and matching standard Black/isort profile behavior.
+order-by-type = false
+
+[tool.ruff.lint.mccabe]
+# NOTE: cyclomatic complexity only; flake8-cognitive-complexity has no ruff equivalent
+max-complexity = 5
+
+[tool.ruff.lint.pydocstyle]
+# Closest ruff convention to the project's Sphinx/reST style
+convention = "pep257"
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src",
+]
+markers = [
+    "integration",
+    "e2e"
+]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+testpaths = ["tests"]
+
+[tool.mypy]
+exclude = [".venv"]
+allow_redefinition = false
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_untyped_defs = true
+follow_imports = "silent"
+ignore_errors = false
+ignore_missing_imports = false
+local_partial_types = true
+strict_optional = true
+strict_equality = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false

@@ -1,0 +1,29 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Vurtual environments
+.venv/
+.env
+
+# Caches
+.uv-cache/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Coverage
+.coverage
+coverage.xml
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+docs/plans/
