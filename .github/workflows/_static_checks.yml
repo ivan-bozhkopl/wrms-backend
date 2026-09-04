@@ -1,6 +1,6 @@
-name: Checks
+name: Static checks
 
-# Reusable workflow - called by ci.yml and release.yml (as a gate before building the image).
+# Reusable workflow for static checks - called by ci.yml and release.yml.
 # Callers pass UV_INDEX explicitly to make it available to the jobs below.
 on:
   workflow_call:
@@ -17,8 +17,6 @@ env:
   UV_INDEX: ${{ secrets.UV_INDEX }}
 
 jobs:
-  # -- Wave 1: fast static, all parallel ---------------------------
-
   lint:
     name: Lint (ruff)
     runs-on: ubuntu-24.04
@@ -28,7 +26,7 @@ jobs:
 
       - uses: ./.github/actions/setup-env
         with:
-          uv-sync-args: "--frozen --only-group lint"
+          uv-sync-args: "--locked --only-group lint"
 
       - name: Check lint
         run: uv run ruff check src tests
@@ -45,7 +43,7 @@ jobs:
 
       - uses: ./.github/actions/setup-env
         with:
-          uv-sync-args: "--frozen --only-group type-check"
+          uv-sync-args: "--locked --only-group type-check"
       
       - run: uv run mypy --config=pyproject.toml .
 
@@ -58,23 +56,6 @@ jobs:
 
       - uses: ./.github/actions/setup-env
         with:
-          uv-sync-args: "--frozen --only-group security"
+          uv-sync-args: "--locked --only-group security"
 
       - run: uv run bandit -r src --config pyproject.toml
-  
-  # -- Wave 2: unit tests - only after all checks pass -------------
-
-  test-unit:
-    name: Unit tests
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    needs: [lint, type-check, security]
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: ./.github/actions/setup-env
-        with:
-          uv-sync-args: "--frozen --only-group test"
-
-      - name: Run unit tests
-        run: uv run pytest -svvv tests/unit --cov=src --cov-branch --cov-report=term-missing

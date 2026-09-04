@@ -9,7 +9,9 @@ inputs:
 
   uv-sync-args:
     description: "Extra arguments passed to uv sync"
-    default: "--frozen --all-groups"
+    # --locked asserts uv.lock is in sync with pyproject.toml and fails the job
+    # if they have drifted, instead of silently installing a stale resolution.
+    default: "--locked --all-groups"
 
 runs:
   using: composite
