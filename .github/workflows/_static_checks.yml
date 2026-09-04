@@ -26,7 +26,7 @@ jobs:
 
       - uses: ./.github/actions/setup-env
         with:
-          uv-sync-args: "--frozen --only-group lint"
+          uv-sync-args: "--locked --only-group lint"
 
       - name: Check lint
         run: uv run ruff check src tests
@@ -43,7 +43,7 @@ jobs:
 
       - uses: ./.github/actions/setup-env
         with:
-          uv-sync-args: "--frozen --only-group type-check"
+          uv-sync-args: "--locked --only-group type-check"
       
       - run: uv run mypy --config=pyproject.toml .
 
@@ -56,6 +56,6 @@ jobs:
 
       - uses: ./.github/actions/setup-env
         with:
-          uv-sync-args: "--frozen --only-group security"
+          uv-sync-args: "--locked --only-group security"
 
       - run: uv run bandit -r src --config pyproject.toml

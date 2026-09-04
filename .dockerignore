@@ -1,0 +1,48 @@
+# Everything listed here is withheld from the build context, which is uploaded to
+# the daemon on every build. The Dockerfile names its inputs one by one, so these
+# patterns serve to keep that upload small and to guarantee that nothing sensitive
+# can be swept up by a broader COPY added later.
+
+# Secrets - nothing here may ever reach a layer
+.env
+.env.*
+*.pem
+*.key
+*.p12
+.netrc
+.npmrc
+secrets/
+
+# VCS and CI
+.git/
+.gitignore
+.gitattributes
+.github/
+Dockerfile
+.dockerignore
+
+# Local environments and build output
+.venv/
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.py[cod]
+
+# Caches
+.uv-cache/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Test and coverage artefacts
+tests/
+.coverage
+coverage.xml
+
+# Tooling, docs, editor and OS noise
+Makefile
+docs/
+.DS_Store
+.idea/
+.vscode/
