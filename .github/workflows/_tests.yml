@@ -1,0 +1,32 @@
+name: Tests
+
+# Reusable workflow for test suites - called by ci.yml and release.yml.
+# Callers pass UV_INDEX explicitly to make it available to the jobs below.
+on:
+  workflow_call:
+    secrets:
+      UV_INDEX:
+        # Optional: forks and local `act` runs without the secret fall back to public PyPI only,
+        # which is intentional.
+        required: false
+
+# Least-privilege default; no job here needs write access.
+permissions: {}
+
+env:
+  UV_INDEX: ${{ secrets.UV_INDEX }}
+
+jobs:
+  test-unit:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-env
+        with:
+          uv-sync-args: "--frozen --only-group test"
+
+      - name: Run unit tests
+        run: uv run pytest -svvv tests/unit --cov=src --cov-branch --cov-report=term-missing

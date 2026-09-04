@@ -16,6 +16,12 @@ permissions: {}
 
 jobs:
   checks:
-    uses: ./.github/workflows/checks.yml
+    uses: ./.github/workflows/_static_checks.yml
+    secrets:
+      UV_INDEX: ${{ secrets.UV_INDEX }}
+
+  test:
+    needs: [checks]
+    uses: ./.github/workflows/_tests.yml
     secrets:
       UV_INDEX: ${{ secrets.UV_INDEX }}
