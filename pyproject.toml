@@ -1,0 +1,97 @@
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "wrms-backend"
+version = "0.1.0"
+description = "Backend of WRMS, the Workshop Repair Management System"
+readme = "README.md"
+authors = [
+    { name = "Ivan Bozhko", email = "ivan.bozhkopl@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+# Development-only tools live in PEP 735 dependency groups rather than in
+# `dependencies` or extras. The runtime image installs with `uv sync --no-dev`,
+# so none of these reach production. CI installs one group per job to keep each
+# job lean, and `dev` bundles all of them for local work.
+[dependency-groups]
+lint = [
+    "ruff>=0.16.4",
+]
+
+type-check = [
+    "mypy>=2.3.1",
+]
+
+test = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
+
+# pre-commit-uv drives hook environments with the uv binary installed next to it, which must
+# satisfy `required-version` below. Keep this pin equal to it. pre-commit-uv 4.4 needs
+# uv>=0.12.22, so it stays below 4.4 until the project's uv pin is raised.
+hooks = [
+    "pre-commit>=4.7.0",
+    "pre-commit-uv>=4.3.0,<4.4",
+    "uv==0.12.7",
+]
+
+infra = [
+    "actionlint-py>=1.7.12.25",  # GitHub Actions workflow linter: syntax, expressions, shell in `run:`
+    "hadolint-bin>=2.15.1",      # Dockerfile linter: best practices, plus shellcheck on RUN lines
+    "zizmor>=1.31.1",            # GitHub Actions security audit: injection, permissions, unpinned actions
+]
+
+dev = [
+    { include-group = "lint" },
+    { include-group = "type-check" },
+    { include-group = "test" },
+    { include-group = "hooks" },
+    { include-group = "infra" },
+]
+
+[tool.uv]
+required-version = "==0.12.7"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+# S (flake8-bandit) covers the security checks, so bandit is not a separate tool.
+select = ["E", "W", "F", "B", "I", "UP", "T10", "S"]
+ignore = [
+    "E501",  # Formatting is handled by `ruff format`
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",  # pytest is built on plain `assert`
+]
+
+[tool.ruff.lint.isort]
+# Sort imports strictly alphabetically regardless of case or type (Classes vs. functions),
+# ensuring consistent ordering and matching standard Black/isort profile behavior.
+order-by-type = false
+
+# No `pythonpath = ["src"]`: tests import the installed package, so a packaging
+# mistake fails the tests instead of being hidden by the source tree.
+[tool.pytest.ini_options]
+markers = []
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+exclude = [".venv"]

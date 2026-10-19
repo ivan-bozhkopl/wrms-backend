@@ -1,0 +1,36 @@
+name: "Setup Python environment"
+description: "Install uv and Python, sync dependencies. The caller checks out the repo first."
+
+inputs:
+  uv-sync-args:
+    description: "Arguments for uv sync (replaces the default)"
+    # --locked asserts uv.lock is in sync with pyproject.toml and fails the job
+    # if they have drifted, instead of silently installing a stale resolution.
+    default: "--locked --all-groups"
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d  # v10.0.0
+      with:
+        version: "0.12.7"
+        # No python-version here: uv reads .python-version, the same file local runs
+        # use, so CI and developers get the same interpreter patch release.
+        # Persist uv's package cache between workflow runs.
+        enable-cache: true
+
+    - name: Sync dependencies
+      shell: bash
+      # The input goes through an env var, not straight into the script, so its value
+      # cannot be run as shell code. The expansion is left unquoted on purpose: the input
+      # holds several arguments (`--locked --only-group lint`) that must split into words.
+      env:
+        UV_SYNC_ARGS: ${{ inputs.uv-sync-args }}
+      run: uv sync $UV_SYNC_ARGS
+
+    - name: Freeze the environment for later steps
+      shell: bash
+      # `uv run` syncs the project and the default (dev) group before every command,
+      # which would quietly install all groups and undo the selection above.
+      # UV_NO_SYNC makes the environment synced here the one every later step uses.
+      run: echo "UV_NO_SYNC=1" >> "$GITHUB_ENV"

@@ -1,0 +1,5 @@
+# The exact interpreter uv uses for .venv, locally and in CI. `requires-python` in
+# pyproject.toml is only the range the package supports; this file pins the patch
+# release, so every machine tests on the same Python. Keep it equal to PYTHON_TAG
+# in the Dockerfile, so CI tests the interpreter the image runs.
+3.14.7

@@ -1,0 +1,26 @@
+name: Tests
+
+# Reusable workflow for test suites - called by ci.yml.
+on:
+  workflow_call:
+
+# Least-privilege default; no job here needs write access.
+permissions: {}
+
+jobs:
+  test-unit:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+        with:
+          persist-credentials: false
+
+      # Tests import the installed package, so the project is installed with the group.
+      # --only-group would leave it out and the first `import wrms_backend` would fail.
+      - uses: ./.github/actions/setup-env
+        with:
+          uv-sync-args: "--locked --no-default-groups --group test"
+
+      - run: make test

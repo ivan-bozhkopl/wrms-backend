@@ -1,0 +1,6 @@
+rules:
+  # zizmor suggests `$/...` for calls to this repository's own reusable workflows. The
+  # local `./...` form is kept: it is the one actionlint is run against here, and it
+  # always resolves to the commit being tested.
+  self-repository:
+    disable: true
