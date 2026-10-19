@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help sync format lint lint-infra type-check test run
+.PHONY: help sync hooks hooks-run format lint lint-infra type-check test run
 
 SETTINGS_FILE_NAME = pyproject.toml
 
@@ -12,6 +12,14 @@ help:
 # target: Install the project (editable) and all dependency groups into .venv -> make sync
 sync:
 	uv sync --all-groups
+
+# target: Install the git hooks (pre-commit and pre-push), local use only -> make hooks
+hooks:
+	uv run pre-commit install
+
+# target: Run all commit-stage hooks on every file -> make hooks-run
+hooks-run:
+	uv run pre-commit run --all-files
 
 # target: Format code -> make format
 format:

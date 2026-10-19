@@ -1,0 +1,41 @@
+version: 2
+
+# Base image digests in the Dockerfile are updated by hand: Dependabot cannot follow
+# `ARG` in `FROM`, and bumping the image alone would desync it from .python-version.
+updates:
+  # Python dependencies
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Wait a week after a release before proposing it, so a compromised release is
+    # usually pulled before it reaches a pull request here.
+    cooldown:
+      default-days: 7
+    # uv is pinned in several places that must agree (required-version, the hooks group,
+    # the uv_build range, setup-env, Dockerfile UV_TAG), so it is bumped by hand in one
+    # change, never by a Dependabot PR that touches only one of them.
+    ignore:
+      - dependency-name: "uv"
+      - dependency-name: "uv-build"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    # The composite action under .github/actions/ pins actions too.
+    directories: ["/", "/.github/actions/*"]
+    schedule:
+      interval: "weekly"
+    # Wait a week after a release before proposing it, so a compromised release is
+    # usually pulled before it reaches a pull request here.
+    cooldown:
+      default-days: 7
+
+  # Hook repos pinned in .pre-commit-config.yaml
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Wait a week after a release before proposing it, so a compromised release is
+    # usually pulled before it reaches a pull request here.
+    cooldown:
+      default-days: 7

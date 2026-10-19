@@ -31,6 +31,15 @@ test = [
     "pytest-cov>=7.1.0",
 ]
 
+# pre-commit-uv drives hook environments with the uv binary installed next to it, which must
+# satisfy `required-version` below. Keep this pin equal to it. pre-commit-uv 4.4 needs
+# uv>=0.12.22, so it stays below 4.4 until the project's uv pin is raised.
+hooks = [
+    "pre-commit>=4.7.0",
+    "pre-commit-uv>=4.3.0,<4.4",
+    "uv==0.12.7",
+]
+
 infra = [
     "actionlint-py>=1.7.12.25",  # GitHub Actions workflow linter: syntax, expressions, shell in `run:`
     "hadolint-bin>=2.15.1",      # Dockerfile linter: best practices, plus shellcheck on RUN lines
@@ -41,6 +50,7 @@ dev = [
     { include-group = "lint" },
     { include-group = "type-check" },
     { include-group = "test" },
+    { include-group = "hooks" },
     { include-group = "infra" },
 ]
 

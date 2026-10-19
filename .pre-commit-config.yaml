@@ -1,0 +1,75 @@
+# Local git hooks, installed with `make hooks`. They are a fast feedback loop for
+# developers and are not run in CI, which already runs the same checks through make.
+#
+# - commit: quick, mostly auto-fixing checks, so a commit stays instant
+# - push:   the slower checks (mypy, infrastructure linters, tests), by calling the same make targets as CI
+#
+# Python tools run through `uv run`, so they use the versions locked in uv.lock instead of
+# a second copy pinned here. Only the third-party hook repos below are pinned in this file,
+# by commit SHA with the tag as a comment, the way the GitHub Actions are pinned.
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e  # frozen: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      # Keeps uv.lock in step with pyproject.toml. CI installs with --locked and fails on a
+      # stale lock file, so catch it before the push.
+      - id: uv-lock
+        name: uv lock
+        entry: uv lock
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+
+      # Slower checks run before a push. They reuse the make targets that CI runs.
+      - id: mypy
+        name: mypy (make type-check)
+        entry: make type-check
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      - id: lint-infra
+        name: infrastructure linters (make lint-infra)
+        entry: make lint-infra
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      - id: pytest
+        name: unit tests (make test)
+        entry: make test
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
