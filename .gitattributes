@@ -1,0 +1,8 @@
+# Line endings. `text=auto` lets git detect which files are text; `eol=lf` makes git
+# check those out with LF on every OS (Windows included) and store them with LF.
+# Make recipes and shell steps break on CRLF, so they behave the same on any checkout.
+* text=auto eol=lf
+
+# Marks the lock file as generated: GitHub collapses it in diffs and leaves it out of
+# the repository's language statistics.
+uv.lock linguist-generated=true
