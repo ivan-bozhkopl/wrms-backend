@@ -1,0 +1,80 @@
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "wrms-backend"
+version = "0.1.0"
+description = "Backend of WRMS, the Workshop Repair Management System"
+readme = "README.md"
+authors = [
+    { name = "Ivan Bozhko", email = "ivan.bozhkopl@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+# Development-only tools live in PEP 735 dependency groups rather than in
+# `dependencies` or extras. The runtime image installs with `uv sync --no-dev`,
+# so none of these reach production. CI installs one group per job to keep each
+# job lean, and `dev` bundles all of them for local work.
+[dependency-groups]
+lint = [
+    "ruff>=0.16.4",
+]
+
+type-check = [
+    "mypy>=2.3.1",
+]
+
+test = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
+
+dev = [
+    { include-group = "lint" },
+    { include-group = "type-check" },
+    { include-group = "test" },
+]
+
+[tool.uv]
+required-version = "==0.12.7"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+# S (flake8-bandit) covers the security checks, so bandit is not a separate tool.
+select = ["E", "W", "F", "B", "I", "UP", "T10", "S"]
+ignore = [
+    "E501",  # Formatting is handled by `ruff format`
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",  # pytest is built on plain `assert`
+]
+
+[tool.ruff.lint.isort]
+# Sort imports strictly alphabetically regardless of case or type (Classes vs. functions),
+# ensuring consistent ordering and matching standard Black/isort profile behavior.
+order-by-type = false
+
+# No `pythonpath = ["src"]`: tests import the installed package, so a packaging
+# mistake fails the tests instead of being hidden by the source tree.
+[tool.pytest.ini_options]
+markers = []
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+exclude = [".venv"]
