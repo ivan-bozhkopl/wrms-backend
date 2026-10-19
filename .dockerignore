@@ -1,0 +1,12 @@
+# An allowlist: everything is withheld from the build context except what the
+# Dockerfile names. A new file in the repository, a secret included, can never be
+# swept into the context or a layer by accident. Add a line here with every new COPY.
+*
+!src/
+!pyproject.toml
+!uv.lock
+!README.md
+
+# Byte-code a local run may leave inside src/.
+**/__pycache__/
+**/*.py[cod]
