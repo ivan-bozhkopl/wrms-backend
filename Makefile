@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help sync format lint type-check test run
+.PHONY: help sync format lint lint-infra type-check test run
 
 SETTINGS_FILE_NAME = pyproject.toml
 
@@ -22,6 +22,12 @@ format:
 lint:
 	uv run ruff check src tests
 	uv run ruff format --check --diff src tests
+
+# target: Lint the Dockerfile and the GitHub Actions workflows -> make lint-infra
+lint-infra:
+	uv run hadolint Dockerfile
+	uv run actionlint
+	uv run zizmor --offline .github
 
 # target: Run type check -> make type-check
 type-check:

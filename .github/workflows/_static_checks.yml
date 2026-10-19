@@ -1,0 +1,60 @@
+name: Static checks
+
+# Reusable workflow for static checks - called by ci.yml.
+# Each step calls the same make target a developer runs locally, so CI and local
+# runs cannot drift apart.
+on:
+  workflow_call:
+
+# Least-privilege default; no job here needs write access.
+permissions: {}
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+        with:
+          persist-credentials: false
+
+      # ruff only reads files, so the project itself is not installed.
+      - uses: ./.github/actions/setup-env
+        with:
+          uv-sync-args: "--locked --only-group lint"
+
+      - run: make lint
+
+  type-check:
+    name: Type check (mypy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+        with:
+          persist-credentials: false
+
+      # mypy needs the project and its runtime dependencies to resolve their types, and it
+      # also checks tests/, so it needs the test tools (pytest) too.
+      # --only-group would leave the project out; --no-default-groups keeps the job lean instead.
+      - uses: ./.github/actions/setup-env
+        with:
+          uv-sync-args: "--locked --no-default-groups --group type-check --group test"
+
+      - run: make type-check
+
+  infra:
+    name: Infrastructure (hadolint, actionlint, zizmor)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-env
+        with:
+          uv-sync-args: "--locked --only-group infra"
+
+      - run: make lint-infra

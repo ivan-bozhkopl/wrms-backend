@@ -31,10 +31,17 @@ test = [
     "pytest-cov>=7.1.0",
 ]
 
+infra = [
+    "actionlint-py>=1.7.12.25",  # GitHub Actions workflow linter: syntax, expressions, shell in `run:`
+    "hadolint-bin>=2.15.1",      # Dockerfile linter: best practices, plus shellcheck on RUN lines
+    "zizmor>=1.31.1",            # GitHub Actions security audit: injection, permissions, unpinned actions
+]
+
 dev = [
     { include-group = "lint" },
     { include-group = "type-check" },
     { include-group = "test" },
+    { include-group = "infra" },
 ]
 
 [tool.uv]

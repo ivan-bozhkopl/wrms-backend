@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# GitHub keeps only one pending run per group and cancels an older pending one even
+# with cancel-in-progress: false. PR runs therefore share a group per ref (a new push
+# supersedes the old run), while every main commit gets its own group (the SHA), so
+# none is cancelled or dropped and each keeps a CI result.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Least-privilege default; no job here needs write access.
+permissions: {}
+
+jobs:
+  checks:
+    uses: ./.github/workflows/_static_checks.yml
+
+  test:
+    needs: [checks]
+    uses: ./.github/workflows/_tests.yml
+
+  # A broken Dockerfile fails the PR here. It needs nothing from the checks,
+  # so it runs alongside them.
+  build-image:
+    name: Build image (no push)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f  # v3.12.0
+
+      - name: Build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6.19.2
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # The one check branch protection requires. It judges every job above, so a new job
+  # is enforced by adding it to `needs` here, with no change in the repository settings.
+  # `if: always()` makes it run after a failure, and a skipped job counts as a failure:
+  # GitHub would otherwise treat a skipped required check as passed.
+  ci-passed:
+    name: CI passed
+    needs: [checks, test, build-image]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fail unless every needed job succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: ${RESULTS}"
+          for result in ${RESULTS}; do
+            [[ "${result}" == "success" ]] || exit 1
+          done
