@@ -30,3 +30,8 @@ htmlcov/
 
 # Local specs and plans; kept out of git until they are needed
 docs/plans/
+
+# Agent harness state and plans; local only, no value in git history
+.agent/
+/PLAN.md
+/features/
